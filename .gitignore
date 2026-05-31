@@ -1,0 +1,27 @@
+# Env files với secrets
+.env
+.env.local
+
+# Binaries
+bin/
+*.exe
+*.test
+*.out
+tmp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Air live-reload
+tmp/
+build-errors.log
+
+# Coverage
+coverage.out
+coverage.html

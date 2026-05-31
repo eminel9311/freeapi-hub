@@ -1,0 +1,25 @@
+# sqlc generate Go code type-safe từ SQL queries.
+# Khác với ORM - bạn viết SQL thật, sqlc gen Go types matching.
+# TUẦN 4 - BUỔI 2: bạn sẽ học cách dùng tool này.
+#
+# Cài: brew install sqlc
+# Hoặc: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+#
+# Chạy: sqlc generate (tạo code từ schema + queries)
+
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/storage/queries"
+    schema: "migrations"
+    gen:
+      go:
+        package: "postgres"
+        out: "internal/storage/postgres"
+        sql_package: "pgx/v5"
+        emit_json_tags: false
+        emit_interface: true
+        emit_prepared_queries: false
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true

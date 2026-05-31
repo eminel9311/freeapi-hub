@@ -1,0 +1,44 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    # Built-in essentials
+    - errcheck       # Check unchecked errors
+    - gosimple       # Simplifications
+    - govet          # Reports suspicious constructs
+    - ineffassign    # Detects ineffectual assignments
+    - staticcheck    # Comprehensive static analysis
+    - typecheck      # Like the front-end of a Go compiler
+    - unused         # Unused code
+
+    # Style & best practices
+    - gofmt
+    - goimports
+    - misspell
+    - revive
+    - unconvert
+    - unparam
+    - gocritic
+
+    # Bugs
+    - bodyclose      # HTTP response body closed
+    - errorlint      # Wraps errors correctly
+    - nilerr         # nil error returns
+    - rowserrcheck   # sql.Rows.Err()
+    - sqlclosecheck  # sql.Rows.Close()
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        disabled: false
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
