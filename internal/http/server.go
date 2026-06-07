@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/eminel9311/freeapi-hub/internal/aggregator"
+	"github.com/eminel9311/freeapi-hub/internal/auth"
 	"github.com/eminel9311/freeapi-hub/internal/httputil"
 	"github.com/eminel9311/freeapi-hub/internal/providers/crypto"
 	"github.com/eminel9311/freeapi-hub/internal/providers/weather"
@@ -17,6 +18,7 @@ type Providers struct {
 	Weather   *weather.Provider
 	Crypto    *crypto.Provider
 	Dashboard *aggregator.Service
+	Auth      *auth.Service
 }
 
 // NewRouter trả về router chính với middleware đã setup.
@@ -57,6 +59,12 @@ func NewRouter(p Providers) *chi.Mux {
 		r.Get("/weather", p.Weather.Handler())
 		r.Get("/crypto", p.Crypto.Handler())
 		r.Post("/dashboard", p.Dashboard.Handler())
+
+	})
+
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/register", p.Auth.RegisterHandler())
+		r.Post("/login", p.Auth.LoginHandler())
 	})
 
 	return r

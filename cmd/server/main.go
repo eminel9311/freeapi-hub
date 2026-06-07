@@ -11,9 +11,12 @@ import (
 	"time"
 
 	"github.com/eminel9311/freeapi-hub/internal/aggregator"
+	"github.com/eminel9311/freeapi-hub/internal/auth"
+	"github.com/eminel9311/freeapi-hub/internal/db"
 	httpserver "github.com/eminel9311/freeapi-hub/internal/http"
 	"github.com/eminel9311/freeapi-hub/internal/providers/crypto"
 	"github.com/eminel9311/freeapi-hub/internal/providers/weather"
+	"github.com/eminel9311/freeapi-hub/internal/storage/postgres"
 	"github.com/joho/godotenv"
 )
 
@@ -34,6 +37,36 @@ func main() {
 		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
+
+	// Khởi tạo DB pool
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		slog.Error("DATABASE_URL is required")
+		os.Exit(1)
+	}
+
+	ctxDB, cancelDB := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelDB()
+
+	pool, err := db.New(ctxDB, dsn)
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	// Repositories
+	userRepo := postgres.NewUserRepo(pool)
+
+	// Auth
+	jwtMgr := auth.NewJWTManager(
+		os.Getenv("JWT_SECRET"),
+		15*time.Minute,
+		7*24*time.Hour,
+	)
+	authSvc := auth.NewService(userRepo, jwtMgr)
+
+	defer pool.Close()
+
+	slog.Info("database connected")
 
 	// TODO: load config từ env vars
 	// TODO: khởi tạo providers (weather, crypto, ...)
@@ -69,6 +102,7 @@ func main() {
 		Weather:   weatherProv,
 		Crypto:    cryptoProv,
 		Dashboard: dashSvc,
+		Auth:      authSvc,
 	})
 	// router := httpserver.NewRouter(weatherProv, cryptoProv, dashSvc) --- IGNORE ---
 	// Khởi tạo router với provider
