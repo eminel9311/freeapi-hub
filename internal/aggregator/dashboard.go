@@ -2,8 +2,10 @@ package aggregator
 
 import (
 	"context"
+	"sync"
 
 	"github.com/eminel9311/freeapi-hub/internal/providers"
+	"golang.org/x/sync/errgroup"
 )
 
 // Dashboard gom kết quả từ nhiều providers chạy song song.
@@ -78,7 +80,36 @@ type Result struct {
 //	    return nil, err
 //	}
 //	return results, nil
+
 func (s *Service) FetchAll(ctx context.Context, req Request) ([]Result, error) {
 	// TODO: implement
-	return nil, nil
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(10) // giới hạn số goroutine chạy đồng thời
+
+	results := make([]Result, 0, len(req.Providers))
+	var mu sync.Mutex
+
+	for name, params := range req.Providers {
+		name, params := name, params // ⚠️ Go <1.22 cần capture biến trong vòng lặp
+		g.Go(func() error {
+			provider, ok := s.providers[name]
+			if !ok {
+				return nil
+			}
+			data, err := provider.Fetch(gctx, params)
+			mu.Lock()
+			defer mu.Unlock()
+			if err != nil {
+				results = append(results, Result{Provider: name, Error: err.Error()})
+				return nil
+			}
+			results = append(results, Result{Provider: name, Data: data})
+			return nil
+		})
+
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	return results, nil
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/eminel9311/freeapi-hub/internal/aggregator"
 	"github.com/eminel9311/freeapi-hub/internal/httputil"
 	"github.com/eminel9311/freeapi-hub/internal/providers/crypto"
 	"github.com/eminel9311/freeapi-hub/internal/providers/weather"
@@ -11,6 +12,12 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
+
+type Providers struct {
+	Weather   *weather.Provider
+	Crypto    *crypto.Provider
+	Dashboard *aggregator.Service
+}
 
 // NewRouter trả về router chính với middleware đã setup.
 // TUẦN 1 - BUỔI 5: bạn sẽ extend file này.
@@ -21,7 +28,7 @@ import (
 //   - Tuần 3: + /v1/dashboard
 //   - Tuần 4: + /auth/register, /auth/login + protect /v1/*
 //   - Tuần 5: + rate limit middleware
-func NewRouter(weatherProv *weather.Provider, cryptoProv *crypto.Provider) *chi.Mux {
+func NewRouter(p Providers) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Built-in chi middleware. Đọc docs để biết mỗi cái làm gì.
@@ -47,8 +54,9 @@ func NewRouter(weatherProv *weather.Provider, cryptoProv *crypto.Provider) *chi.
 	// })
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/weather", weatherProv.Handler())
-		r.Get("/crypto", cryptoProv.Handler())
+		r.Get("/weather", p.Weather.Handler())
+		r.Get("/crypto", p.Crypto.Handler())
+		r.Post("/dashboard", p.Dashboard.Handler())
 	})
 
 	return r

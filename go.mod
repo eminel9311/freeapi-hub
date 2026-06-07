@@ -1,6 +1,6 @@
 module github.com/eminel9311/freeapi-hub
 
-go 1.22
+go 1.25.0
 
 require (
 	github.com/go-chi/chi/v5 v5.1.0
@@ -23,6 +23,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sync v0.20.0
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 )

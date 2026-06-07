@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eminel9311/freeapi-hub/internal/aggregator"
 	httpserver "github.com/eminel9311/freeapi-hub/internal/http"
 	"github.com/eminel9311/freeapi-hub/internal/providers/crypto"
 	"github.com/eminel9311/freeapi-hub/internal/providers/weather"
@@ -61,8 +62,15 @@ func main() {
 	cryptoProv := crypto.New(
 		"https://api.coingecko.com/api/v3",
 	)
+	// Khởi tạo service cho dashboard
+	dashSvc := aggregator.New(weatherProv, cryptoProv)
 
-	router := httpserver.NewRouter(weatherProv, cryptoProv)
+	router := httpserver.NewRouter(httpserver.Providers{
+		Weather:   weatherProv,
+		Crypto:    cryptoProv,
+		Dashboard: dashSvc,
+	})
+	// router := httpserver.NewRouter(weatherProv, cryptoProv, dashSvc) --- IGNORE ---
 	// Khởi tạo router với provider
 
 	srv := &http.Server{
