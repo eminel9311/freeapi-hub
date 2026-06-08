@@ -99,6 +99,7 @@ func main() {
 	dashSvc := aggregator.New(weatherProv, cryptoProv)
 
 	router := httpserver.NewRouter(httpserver.Providers{
+		JWT:       jwtMgr,
 		Weather:   weatherProv,
 		Crypto:    cryptoProv,
 		Dashboard: dashSvc,

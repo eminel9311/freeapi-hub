@@ -7,6 +7,7 @@ import (
 	"github.com/eminel9311/freeapi-hub/internal/aggregator"
 	"github.com/eminel9311/freeapi-hub/internal/auth"
 	"github.com/eminel9311/freeapi-hub/internal/httputil"
+	"github.com/eminel9311/freeapi-hub/internal/middleware"
 	"github.com/eminel9311/freeapi-hub/internal/providers/crypto"
 	"github.com/eminel9311/freeapi-hub/internal/providers/weather"
 	"github.com/go-chi/chi/v5"
@@ -15,6 +16,7 @@ import (
 )
 
 type Providers struct {
+	JWT       *auth.JWTManager
 	Weather   *weather.Provider
 	Crypto    *crypto.Provider
 	Dashboard *aggregator.Service
@@ -56,6 +58,8 @@ func NewRouter(p Providers) *chi.Mux {
 	// })
 
 	r.Route("/v1", func(r chi.Router) {
+		r.Use(middleware.JWTAuth(p.JWT))
+
 		r.Get("/weather", p.Weather.Handler())
 		r.Get("/crypto", p.Crypto.Handler())
 		r.Post("/dashboard", p.Dashboard.Handler())
